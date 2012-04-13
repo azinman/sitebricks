@@ -73,6 +73,7 @@ public class NettyImapClient implements MailClient, Idler {
   // For debugging, use with caution!
   public static void addUserForVerboseOutput(String username, boolean toStdOut) {
     logAllMessagesForUsers.put(username, toStdOut);
+    MailClientHandler.addUserForVerboseLogging(username, toStdOut);
   }
 
   @ManagedOperation
@@ -396,7 +397,52 @@ public class NettyImapClient implements MailClient, Idler {
 
     return valueFuture;
   }
+  
+  @Override
+  public ListenableFuture<List<MessageStatus>> listUidsThin(Folder folder, List<Integer> uids) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+            "Can't execute command while idling (are you watching a folder?)");
 
+    checkCurrentFolder(folder);
+    SettableFuture<List<MessageStatus>> valueFuture = SettableFuture.create();
+
+    // -ve end range means get everything (*).
+    String extensions = config.useGmailExtensions() ? " X-GM-MSGID X-GM-THRID X-GM-LABELS UID" : "";
+    StringBuilder argsBuilder = new StringBuilder();
+
+    // Emit ranges.
+//    argsBuilder.append('(');
+    for (int i = 0; i < uids.size(); i++) {
+      int uid = uids.get(i);
+      argsBuilder.append(uid);
+      if (i < uids.size() - 1)
+        argsBuilder.append(',');
+    }
+//    argsBuilder.append(')');
+    argsBuilder.append(" (FLAGS" + extensions + ")");
+    send(Command.FETCH_THIN_HEADERS_UID, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+
+  @Override
+  public ListenableFuture<List<Integer>> searchUid(Folder folder, String query) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+            "Can't execute command while idling (are you watching a folder?)");
+    Preconditions.checkState(config.useGmailExtensions(), "This requires using GMAIL");
+    checkCurrentFolder(folder);
+    
+    SettableFuture<List<Integer>> valueFuture = SettableFuture.create();
+    StringBuilder argsBuilder = new StringBuilder();
+    argsBuilder.append("X-GM-RAW \"").append(query).append('"');
+    send(Command.SEARCH_RAW_UID, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+  
   @Override
   public ListenableFuture<List<Integer>> searchUid(Folder folder, String query, Date since) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");

@@ -103,7 +103,15 @@ public interface MailClient {
   ListenableFuture<List<MessageStatus>> listUidThin(Folder folder, int start, int end);
 
   ListenableFuture<List<MessageStatus>> listUidThin(Folder folder, List<Sequence> sequences);
+  
+  ListenableFuture<List<MessageStatus>> listUidsThin(Folder folder, List<Integer> uids);
 
+  /**
+   * Runs a search for a raw query as provided by gmail, and returns the UIDs of the
+   * corresponding result. Returns an empty list if there were no results.
+   */
+  ListenableFuture<List<Integer>> searchUid(Folder folder, String query);
+  
   /**
    * Runs a search for a raw query as provided by gmail, and returns the UIDs of the
    * corresponding result. Returns an empty list if there were no results.

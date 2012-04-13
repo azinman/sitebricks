@@ -19,7 +19,6 @@ import javax.mail.internet.MimeUtility;
 
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
-import org.jetbrains.annotations.TestOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,13 +92,6 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
 
   private final boolean forceTruncatorGroping;
   private final long ignoreMessageBodyLengthForTesting;
-
-  // Special constructor for testing only.
-  @TestOnly
-  MessageBodyExtractor(boolean forceTruncatorGroping, long ignoreMessageBodyLengthForTesting) {
-    this.forceTruncatorGroping = forceTruncatorGroping;
-    this.ignoreMessageBodyLengthForTesting = ignoreMessageBodyLengthForTesting;
-  }
 
   MessageBodyExtractor() {
     forceTruncatorGroping = false;
@@ -215,7 +207,7 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
           break;
         }
       }
-  
+
       return lengthTruncated.listIterator();
     } catch(ParseException e) {
       // reset iterator if we failed.

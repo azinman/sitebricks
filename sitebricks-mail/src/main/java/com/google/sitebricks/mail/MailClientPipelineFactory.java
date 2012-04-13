@@ -29,6 +29,8 @@ class MailClientPipelineFactory implements ChannelPipelineFactory {
 
     if (config.getAuthType() != Auth.PLAIN) {
       SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+      String[] enabledProtocols = {"SSLv3", "TLSv1"};
+      sslEngine.setEnabledProtocols(enabledProtocols);
       sslEngine.setUseClientMode(true);
       SslHandler sslHandler = new SslHandler(sslEngine);
       sslHandler.setEnableRenegotiation(true);

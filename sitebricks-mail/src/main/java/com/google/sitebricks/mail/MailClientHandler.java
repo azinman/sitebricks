@@ -35,6 +35,7 @@ class MailClientHandler extends SimpleChannelHandler {
 
   private static final Map<String, Boolean> logAllMessagesForUsers = new ConcurrentHashMap<String, Boolean>();
 
+  public static final String ID_PREFIX = "* ID";
   public static final String CAPABILITY_PREFIX = "* CAPABILITY";
   static final Pattern AUTH_SUCCESS_REGEX =
       Pattern.compile("[.] OK .*@.* \\(Success\\)", Pattern.CASE_INSENSITIVE);
@@ -167,7 +168,9 @@ class MailClientHandler extends SimpleChannelHandler {
         return;
       }
       if (loginSuccess.getCount() > 0) {
-        if (message.startsWith(CAPABILITY_PREFIX)) {
+        if (message.startsWith(ID_PREFIX)) {
+          return;
+        } else if (message.startsWith(CAPABILITY_PREFIX)) {
           this.capabilities = Arrays.asList(
               message.substring(CAPABILITY_PREFIX.length() + 1).split("[ ]+"));
           return;

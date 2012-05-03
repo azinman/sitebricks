@@ -13,18 +13,26 @@ class MailClientConfig {
   private final String username;
   private final String password;
   private final long timeout;
+  private final String nameId;
+  private final String versionId;
+  private final String vendorId;
+  private final String contactId;
   private final OAuthConfig oAuthConfig;
 
   private final boolean gmail;
 
   public MailClientConfig(String host, int port, Auth authType, String username, String password,
-                          long timeout) {
+                          long timeout, String nameId, String versionId, String vendorId, String contactId) {
     this.host = host;
     this.port = port;
     this.authType = authType;
     this.username = username;
     this.password = password;
     this.timeout = timeout;
+    this.nameId = nameId;
+    this.versionId = versionId;
+    this.vendorId = vendorId;
+    this.contactId = contactId;
     oAuthConfig = null;
 
     this.gmail = isGmail(host);
@@ -34,13 +42,18 @@ class MailClientConfig {
                           int port,
                           String username,
                           OAuthConfig config,
-                          long timeout) {
+                          long timeout,
+                          String nameId, String versionId, String vendorId, String contactId) {
     this.host = host;
     this.port = port;
     this.authType = Auth.OAUTH;
     this.username = username;
     this.password = null;
     this.timeout = timeout;
+    this.nameId = nameId;
+    this.versionId = versionId;
+    this.vendorId = vendorId;
+    this.contactId = contactId;
     oAuthConfig = config;
 
     this.gmail = isGmail(host);
@@ -80,5 +93,21 @@ class MailClientConfig {
 
   public OAuthConfig getOAuthConfig() {
     return oAuthConfig;
+  }
+
+  public String getNameId() {
+    return nameId;
+  }
+
+  public String getVersionId() {
+    return versionId;
+  }
+
+  public String getVendorId() {
+    return vendorId;
+  }
+
+  public String getContactId() {
+    return contactId;
   }
 }

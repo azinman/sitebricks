@@ -16,6 +16,8 @@ public interface Mail {
   public enum Auth { PLAIN, SSL, OAUTH }
 
   public static interface AuthBuilder {
+    AuthBuilder id(String name, String version, String vendor, String contactEmail);
+
     AuthBuilder timeout(long amount, TimeUnit unit);
 
     AuthBuilder executors(ExecutorService bossPool, ExecutorService workerPool);

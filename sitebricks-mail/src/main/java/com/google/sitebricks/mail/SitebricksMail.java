@@ -15,6 +15,9 @@ class SitebricksMail implements Mail, AuthBuilder {
   private String host;
   private int port;
 
+  // For ID command
+  private String name, version, vendor, contactEmail;
+
   private long timeout;
 
   private ExecutorService bossPool;
@@ -28,6 +31,19 @@ class SitebricksMail implements Mail, AuthBuilder {
         "Must specify a valid (non-zero) port");
     this.host = host;
     this.port = port;
+    return this;
+  }
+
+  @Override
+  public AuthBuilder id(String name, String version, String vendor, String contactEmail) {
+    Preconditions.checkArgument(name != null, "name cannot be null!");
+    Preconditions.checkArgument(version != null, "version cannot be null!");
+    Preconditions.checkArgument(vendor != null, "vendor cannot be null!");
+    Preconditions.checkArgument(contactEmail != null, "contactEmail cannot be null!");
+    this.name = name;
+    this.version = version;
+    this.vendor = vendor;
+    this.contactEmail = contactEmail;
     return this;
   }
 
@@ -55,7 +71,7 @@ class SitebricksMail implements Mail, AuthBuilder {
     }
 
     MailClientConfig config = new MailClientConfig(host, port, authType, username, password,
-        timeout);
+        timeout, name, version, vendor, contactEmail);
 
     return new NettyImapClient(config, bossPool, workerPool);
   }
@@ -67,7 +83,8 @@ class SitebricksMail implements Mail, AuthBuilder {
       workerPool = Executors.newCachedThreadPool();
     }
 
-    return new NettyImapClient(new MailClientConfig(host, port, username, config, timeout),
+    return new NettyImapClient(
+        new MailClientConfig(host, port, username, config, timeout, name, version, vendor, contactEmail),
         bossPool, workerPool);
   }
 }

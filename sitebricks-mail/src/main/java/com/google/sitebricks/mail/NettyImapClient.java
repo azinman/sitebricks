@@ -172,7 +172,15 @@ public class NettyImapClient implements MailClient, Idler {
         channel.write(". AUTHENTICATE XOAUTH " + oauthString + "\r\n");
 
       }
-      return mailClientHandler.awaitLogin();
+      boolean loggedIn = mailClientHandler.awaitLogin();
+      if (loggedIn) {
+        String id = String.format(
+          ". ID (\"name\" \"%s\" \"version\" \"%s\" \"vendor\" \"%s\" \"contact\" \"%s\")\r\n",
+            config.getNameId(), config.getVersionId(), config.getVendorId(), config.getContactId());
+        log.info("Identifying using " + id);
+        channel.write(sequence.incrementAndGet() + id);
+      }
+      return loggedIn;
     } catch (Exception e) {
       // Capture the wire trace and log it for some extra context here.
       StringBuilder trace = new StringBuilder();
@@ -397,7 +405,7 @@ public class NettyImapClient implements MailClient, Idler {
 
     return valueFuture;
   }
-  
+
   @Override
   public ListenableFuture<List<MessageStatus>> listUidsThin(Folder folder, List<Integer> uids) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
@@ -434,7 +442,7 @@ public class NettyImapClient implements MailClient, Idler {
             "Can't execute command while idling (are you watching a folder?)");
     Preconditions.checkState(config.useGmailExtensions(), "This requires using GMAIL");
     checkCurrentFolder(folder);
-    
+
     SettableFuture<List<Integer>> valueFuture = SettableFuture.create();
     StringBuilder argsBuilder = new StringBuilder();
     argsBuilder.append("X-GM-RAW \"").append(query).append('"');
@@ -442,7 +450,7 @@ public class NettyImapClient implements MailClient, Idler {
 
     return valueFuture;
   }
-  
+
   @Override
   public ListenableFuture<List<Integer>> searchUid(Folder folder, String query, Date since) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");

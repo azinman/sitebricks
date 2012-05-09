@@ -21,6 +21,7 @@ public class MessageStatus {
   private List<String> cc;
   private List<String> bcc;
   private List<String> replyTo;
+  private List<String> bodyParts;
 
   private EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
   private Date internalDate;

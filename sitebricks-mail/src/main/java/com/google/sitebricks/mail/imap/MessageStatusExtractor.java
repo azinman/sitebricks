@@ -93,12 +93,12 @@ class MessageStatusExtractor implements Extractor<List<MessageStatus>> {
             int nilPos = rest.indexOf(" NIL");
             int delim = Math.min(bracketPos == -1 ? Integer.MAX_VALUE : bracketPos,
                 nilPos == -1 ? Integer.MAX_VALUE : nilPos);
-            
+
             if (delim == Integer.MAX_VALUE) {
               int spacePos = rest.indexOf(" ");
               delim = spacePos == -1 ? Integer.MAX_VALUE : spacePos;
             }
-            
+
             if (delim > 0 && delim != Integer.MAX_VALUE) {
               stringToken.append(rest.substring(0, delim));
               rest = rest.substring(delim);
@@ -255,6 +255,46 @@ class MessageStatusExtractor implements Extractor<List<MessageStatus>> {
     Parsing.eat(tokens, ")");
     return true;
   }
+
+
+  /* PUNTING
+  static final Set<String> SUBTYPES = Sets.<String>(
+    "MIXED", "MESSAGE", "DIGEST", "ALTERNATIVE", "RELATED", "REPORT","SIGNED","ENCRYPTED","FORM DATA");
+  static final Pattern CONTENT_TYPE_RE = Pattern.compile("\\s*\"(TEXT|APPLICATION|IMAGE|VIDEO|AUDIO)\"", Pattern.CASE_INSENSITIVE)
+  static final Pattern MULTIPART_SUBTYPE_RE = Pattern.compile("\\s*\"(MIXED|MESSAGE|DIGEST|ALTERNATIVE|RELATED|REPORT|SIGNED|ENCRYPTED|FORM DATA)\"", Pattern.CASE_INSENSITIVE)
+
+  private class BodySection
+
+
+  private static boolean parseBodyStructure(Queue<String> tokens, MessageStatus status) {
+    if (Parsing.matchAnyOf(tokens, "BODYSTRUCTURE") == null)
+      return false;
+    status.setBodyParts(Maps.<String, String> newHashMap());
+    Parsing.eat(tokens, "(");
+
+
+
+    while (!")".equals(tokens.peek())) {
+      Parsing.eat(tokens, "(");
+      while (!")".equals(tokens.peek())) {
+        String mimeCategory = tokens.poll();
+        String mimeSubtype = tokens.poll();
+        Map<String, Map<String, String>> section = Maps.<String, String> newHashMap();
+        Parsing.eat(tokens, "(");
+        while (!")".equals(tokens.peek())) {
+          String key = tokens.poll();
+          String value = tokens.poll();
+          section.put(key, value);
+        }
+        Parsing.eat(tokens, ")");
+        status.getBodyParts().put(mimeCategory + "/" + mimeSubtype, section);
+      }
+      Parsing.eat(tokens, ")");
+    }
+    Parsing.eat(tokens, ")");
+    return true;
+  }
+  */
 
   private static boolean parseEnvelope(Queue<String> tokens, MessageStatus status) {
     if (Parsing.matchAnyOf(tokens, "ENVELOPE") == null)

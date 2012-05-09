@@ -30,8 +30,19 @@ public enum Flag {
 
   private static final Map<String, Flag> flagMap = new HashMap<String, Flag>();
   private static final Map<Flag, String> lookup = new HashMap<Flag, String>();
+  private static final Map<Flag, String> pretty = new HashMap<Flag, String>();
 
   static {
+    pretty.put(SEEN, "seen");
+    pretty.put(RECENT, "recent");
+    pretty.put(DELETED, "deleted");
+    pretty.put(DRAFT, "draft");
+    pretty.put(FLAGGED, "flagged");
+    pretty.put(ANSWERED, "answered");
+    pretty.put(FORWARDED, "forwarded");
+    pretty.put(NOT_JUNK, "notjunk");
+    pretty.put(JUNK, "junk");
+
     flagMap.put("\\seen", SEEN);
     flagMap.put("\\recent", RECENT);
     flagMap.put("\\deleted", DELETED);
@@ -77,6 +88,15 @@ public enum Flag {
     }
     imap.append(")");
     return imap.toString();
+  }
+
+  public static Set<String> toString(Set<Flag> flags) {
+    Set<String> result = new HashSet<String>();
+    Iterator<Flag> it = flags.iterator();
+    while (it.hasNext()) {
+      result.add(pretty.get(it.next()))
+    }
+    return result;
   }
 
   /**

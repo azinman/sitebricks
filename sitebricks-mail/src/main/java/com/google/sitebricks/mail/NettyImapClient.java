@@ -636,6 +636,67 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<Message>> valueFuture = SettableFuture.create();
+
+    StringBuilder argsBuilder = new StringBuilder();
+    // Emit ranges.
+//    argsBuilder.append('(');
+    for (int i = 0; i < uids.size(); i++) {
+      int uid = uids.get(i);
+      argsBuilder.append(uid);
+      if (i < uids.size() - 1)
+        argsBuilder.append(',');
+    }
+//    argsBuilder.append(')');
+    argsBuilder.append(" (FLAGS INTERNALDATE UID");
+    if (config.useGmailExtensions()) {
+      argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
+    }
+    argsBuilder.append(" BODY.PEEK[])");
+    send(Command.FETCH_BODY_UID, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+
+  @Override
+  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, List<Integer> uids) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<MessageStatus>> valueFuture = SettableFuture.create();
+
+    StringBuilder argsBuilder = new StringBuilder();
+    // Emit ranges.
+//    argsBuilder.append('(');
+    for (int i = 0; i < uids.size(); i++) {
+      int uid = uids.get(i);
+      argsBuilder.append(uid);
+      if (i < uids.size() - 1)
+        argsBuilder.append(',');
+    }
+//    argsBuilder.append(')');
+    argsBuilder.append(" (RFC822.SIZE FLAGS INTERNALDATE BODYSTRUCTURE ENVELOPE UID");
+    if (config.useGmailExtensions()) {
+      argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
+    }
+    argsBuilder.append(")");
+    send(Command.FETCH_THIN_HEADERS_UID, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+  @Override
   public synchronized void watch(Folder folder, FolderObserver observer) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
     checkCurrentFolder(folder);

@@ -103,7 +103,7 @@ public interface MailClient {
   ListenableFuture<List<MessageStatus>> listUidThin(Folder folder, int start, int end);
 
   ListenableFuture<List<MessageStatus>> listUidThin(Folder folder, List<Sequence> sequences);
-  
+
   ListenableFuture<List<MessageStatus>> listUidsThin(Folder folder, List<Integer> uids);
 
   /**
@@ -111,7 +111,7 @@ public interface MailClient {
    * corresponding result. Returns an empty list if there were no results.
    */
   ListenableFuture<List<Integer>> searchUid(Folder folder, String query);
-  
+
   /**
    * Runs a search for a raw query as provided by gmail, and returns the UIDs of the
    * corresponding result. Returns an empty list if there were no results.
@@ -185,6 +185,8 @@ public interface MailClient {
    * <b>NOTE: you must call {@link #open(String)} first.</b>
    */
   public ListenableFuture<List<Message>> fetch(Folder folder, int start, int end);
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids);
+  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, List<Integer> uids);
 
   /**
    * Watches a folder for changes. This is an implementation of the IMAP IDLE command and

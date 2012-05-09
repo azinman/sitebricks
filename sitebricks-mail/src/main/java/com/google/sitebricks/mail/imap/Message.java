@@ -55,19 +55,25 @@ public class Message implements HasBodyParts {
   @Override public void createBodyParts() { /* Noop */ }
 
   // Short hand.
-  @Override public void setBody(String body) {
+  @Override public void setBody(String mimeType, String body) {
     assert bodyParts.isEmpty() : "Unexpected set body call to a multipart email";
-    bodyParts.add(new BodyPart(body));
+    bodyParts.add(new BodyPart(mimeType, body));
   }
 
   // http://jira.codehaus.org/browse/JACKSON-739, can't have methods of same name.
-  @Override public void setBodyBytes(byte[] body) {
+  @Override public void setBodyBytes(String mimeType, byte[] body) {
     assert bodyParts.isEmpty() : "Unexpected set body call to a multipart email";
-    bodyParts.add(new BodyPart(body));
+    bodyParts.add(new BodyPart(mimeType, body));
+  }
+
+  @Override public void setMimeType(String mimeType) {
+    throw new RuntimeException("Should not call mimeType from here");
   }
 
   public static class BodyPart implements HasBodyParts {
     private Multimap<String, String> headers = newListMultimap();
+
+    private String mimeType;
 
     // This field is set for HTML or text emails. and is mutually exclusive with binBody.
     private String body;
@@ -77,14 +83,16 @@ public class Message implements HasBodyParts {
 
     private List<BodyPart> bodyParts;
 
-    public BodyPart(String body) {
+    public BodyPart(String mimeType, String body) {
+      this.mimeType = mimeType;
       this.body = body;
     }
 
     public BodyPart() {
     }
 
-    public BodyPart(byte[] body) {
+    public BodyPart(String mimeType, byte[] body) {
+      this.mimeType = mimeType;
       this.binBody = body;
     }
 
@@ -105,7 +113,16 @@ public class Message implements HasBodyParts {
       return body;
     }
 
-    public void setBody(String body) {
+    public String getMimeType() {
+      return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+      this.mimeType = mimeType;
+    }
+
+    public void setBody(String mimeType, String body) {
+      this.mimeType = mimeType;
       this.body = body;
     }
 
@@ -113,7 +130,8 @@ public class Message implements HasBodyParts {
       return binBody;
     }
 
-    public void setBodyBytes(byte[] binBody) {
+    public void setBodyBytes(String mimeType, byte[] binBody) {
+      this.mimeType = mimeType;
       this.binBody = binBody;
     }
   }

@@ -338,9 +338,10 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
     if (mimeType.startsWith("text/") && !isAttachment(entity.getHeaders())) {
       String body = readBodyAsString(iterator, boundary, gropeForTruncator);
 
-      entity.setBody(decode(body, transferEncoding(entity), charset(mimeType)));
+      entity.setBody(mimeType, decode(body, transferEncoding(entity), charset(mimeType)));
     } else if (mimeType.startsWith("multipart/") /* mixed|alternative|digest */) {
       String boundaryToken = boundary(mimeType);
+      entity.setMimeType(mimeType);
 
       if (boundaryToken == null) {
         throw new RuntimeException("Encountered multipart with no boundary token defined for " +
@@ -367,6 +368,7 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
         // And parse the body itself (seek up to the next occurrence of boundary token).
         // Recurse down this method to slurp up different content types.
         String partMimeType = mimeType(bodyPart.getHeaders());
+        bodyPart.setMimeType(partMimeType);
         String innerBoundary = boundary(partMimeType);
 
         // If the internal body part is not multipart alternative, then use the parent boundary.
@@ -401,6 +403,7 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
       // We store them as a child body part, with the containing part having no body of its own,
       // merely the headers.
       Message.BodyPart bodyPart = new Message.BodyPart();
+      bodyPart.setMimeType(mimeType);
       entity.createBodyParts();
       entity.getBodyParts().add(bodyPart);
 
@@ -457,7 +460,7 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
           bodyBoundary != null ? bodyBoundary : boundary, errorCount, gropeForTruncator);
       return quotedPrintable ? alreadyHitEndMarker : gotEndMarker;
     } else {
-      entity.setBodyBytes(readBodyAsBytes(transferEncoding(entity), iterator, boundary,
+      entity.setBodyBytes(mimeType, readBodyAsBytes(transferEncoding(entity), iterator, boundary,
           charset(mimeType), errorCount, gropeForTruncator));
     }
     return false;

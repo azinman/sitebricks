@@ -12,8 +12,8 @@ public interface HasBodyParts {
 
   Multimap<String, String> getHeaders();
 
-  void setBody(String body);
-  void setBodyBytes(byte[] body);
-
+  void setBody(String mimeType, String body);
+  void setBodyBytes(String mimeType, byte[] body);
+  void setMimeType(String mimeType);
   void createBodyParts();
 }

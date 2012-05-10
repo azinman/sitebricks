@@ -24,6 +24,7 @@ public class Message implements HasBodyParts {
   // A header can have multiple, different values.
   private Multimap<String, String> headers = newListMultimap();
   private List<BodyPart> bodyParts = new ArrayList<BodyPart>();
+  private String rootMimeType = null;
 
   public void setImapUid(int imapUid) {
     this.imapUid = imapUid;
@@ -67,7 +68,14 @@ public class Message implements HasBodyParts {
   }
 
   @Override public void setMimeType(String mimeType) {
-    throw new RuntimeException("Should not call mimeType from here");
+    if (!mimeType.startsWith("multipart")) {
+      throw new RuntimeException("Invalid root mimeType: " + mimeType);
+    }
+    this.rootMimeType = mimeType;
+  }
+
+  public String getRootMimeType() {
+    return rootMimeType;
   }
 
   public static class BodyPart implements HasBodyParts {

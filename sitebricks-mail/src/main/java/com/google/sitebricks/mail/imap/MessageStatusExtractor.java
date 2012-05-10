@@ -1,5 +1,7 @@
 package com.google.sitebricks.mail.imap;
 
+import com.google.sitebricks.util.*;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -304,10 +306,9 @@ class MessageStatusExtractor implements Extractor<List<MessageStatus>> {
     String receivedDate = tokens.peek();
     if (Parsing.isValid(receivedDate)) {
       receivedDate = Parsing.normalizeDateToken(Parsing.match(tokens, String.class));
-      try {
-        status.setReceivedDate(new javax.mail.internet.MailDateFormat().parse(receivedDate));
-      } catch (ParseException e) {
-        log.error("Malformed received date format {}. Unable to parse.", receivedDate, e);
+      status.setReceivedDate(com.google.sitebricks.util.MailDateFormat.parse(receivedDate));
+      if (status.getReceivedDate() == null) {
+        log.warning("Malformed received date format {}. Unable to parse.", receivedDate);
       }
     } else if (receivedDate != null) {
       Parsing.eat(tokens, "NIL");

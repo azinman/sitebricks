@@ -686,7 +686,7 @@ public class NettyImapClient implements MailClient, Idler {
         argsBuilder.append(',');
     }
 //    argsBuilder.append(')');
-    argsBuilder.append(" (RFC822.SIZE FLAGS INTERNALDATE BODYSTRUCTURE ENVELOPE UID");
+    argsBuilder.append(" (RFC822.SIZE FLAGS INTERNALDATE ENVELOPE UID");
     if (config.useGmailExtensions()) {
       argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
     }

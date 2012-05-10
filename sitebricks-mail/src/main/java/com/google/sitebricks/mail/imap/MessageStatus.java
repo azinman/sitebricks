@@ -11,7 +11,7 @@ import java.util.*;
 public class MessageStatus {
   private int imapUid;
   private String messageUid;
-  private Date receivedDate;
+  private GregorianCalendar receivedDate;
   private String subject;
   private String inReplyTo;
 
@@ -100,7 +100,7 @@ public class MessageStatus {
     return messageUid;
   }
 
-  public Date getReceivedDate() {
+  public GregorianCalendar getReceivedDate() {
     return receivedDate;
   }
 
@@ -124,7 +124,7 @@ public class MessageStatus {
     this.messageUid = messageUid;
   }
 
-  public void setReceivedDate(Date receivedDate) {
+  public void setReceivedDate(GregorianCalendar receivedDate) {
     this.receivedDate = receivedDate;
   }
 
@@ -178,7 +178,7 @@ public class MessageStatus {
     return "MessageStatus{" +
         "imapUid=" + imapUid +
         ", messageUid='" + messageUid + '\'' +
-        ", receivedDate=" + (receivedDate == null ? "null" : ISO_C_DATE_SYDNEY.format(receivedDate)) +
+        ", receivedDate=" + (receivedDate == null ? "null" : receivedDate) +
         ", subject='" + subject + '\'' +
         ", inReplyTo='" + inReplyTo + '\'' +
         ", from=" + from +

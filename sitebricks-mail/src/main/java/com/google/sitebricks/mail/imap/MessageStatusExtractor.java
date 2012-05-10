@@ -308,7 +308,7 @@ class MessageStatusExtractor implements Extractor<List<MessageStatus>> {
       receivedDate = Parsing.normalizeDateToken(Parsing.match(tokens, String.class));
       status.setReceivedDate(com.google.sitebricks.util.MailDateFormat.parse(receivedDate));
       if (status.getReceivedDate() == null) {
-        log.warning("Malformed received date format {}. Unable to parse.", receivedDate);
+        log.warn("Malformed received date format {}. Unable to parse.", receivedDate);
       }
     } else if (receivedDate != null) {
       Parsing.eat(tokens, "NIL");

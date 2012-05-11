@@ -188,7 +188,6 @@ public interface MailClient {
    */
   public ListenableFuture<List<Message>> fetch(Folder folder, int start, int end);
   public ListenableFuture<List<Message>> fetch(Folder folder, List<Integer> seqs);
-  public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids);
   public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids);
   public ListenableFuture<List<MessageStatus>> fetchHeaders(Folder folder, Collection<Integer> seqs);
 

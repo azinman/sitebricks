@@ -151,6 +151,12 @@ public class NettyImapClient implements MailClient, Idler {
     return login();
   }
 
+  @Override
+  public void setDisconnectListener(DisconnectListener listener) {
+    this.disconnectListener = listener;
+  }
+
+
   private boolean login() {
     try {
       channel.write(". CAPABILITY\r\n");
@@ -620,6 +626,38 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
+  public ListenableFuture<List<Message>> fetch(Folder folder, List<Integer> seqs) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<Message>> valueFuture = SettableFuture.create();
+
+    StringBuilder argsBuilder = new StringBuilder();
+    // Emit ranges.
+    boolean isFirst = true;
+    for (Integer seq : seqs) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        argsBuilder.append(',');
+      }
+      argsBuilder.append(seq);
+    }
+    argsBuilder.append(" (FLAGS INTERNALDATE UID");
+    if (config.useGmailExtensions()) {
+      argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
+    }
+    argsBuilder.append(" BODY.PEEK[])");
+    send(Command.FETCH_BODY, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+
+  @Override
   public ListenableFuture<Message> fetchUid(Folder folder, int uid) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
     Preconditions.checkState(!mailClientHandler.idleRequested.get(),
@@ -647,14 +685,12 @@ public class NettyImapClient implements MailClient, Idler {
 
     StringBuilder argsBuilder = new StringBuilder();
     // Emit ranges.
-//    argsBuilder.append('(');
     for (int i = 0; i < uids.size(); i++) {
       int uid = uids.get(i);
       argsBuilder.append(uid);
       if (i < uids.size() - 1)
         argsBuilder.append(',');
     }
-//    argsBuilder.append(')');
     argsBuilder.append(" (FLAGS INTERNALDATE UID");
     if (config.useGmailExtensions()) {
       argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
@@ -667,7 +703,40 @@ public class NettyImapClient implements MailClient, Idler {
 
 
   @Override
-  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, List<Integer> uids) {
+  public ListenableFuture<List<MessageStatus>> fetchHeaders(Folder folder, Collection<Integer> seqs) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<MessageStatus>> valueFuture = SettableFuture.create();
+
+    StringBuilder argsBuilder = new StringBuilder();
+    // Emit ranges.
+    boolean isFirst = true;
+    for (Integer seq : seqs) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        argsBuilder.append(',');
+      }
+      argsBuilder.append(seq);
+    }
+    argsBuilder.append(" (RFC822.SIZE FLAGS INTERNALDATE ENVELOPE UID");
+    if (config.useGmailExtensions()) {
+      argsBuilder.append(" X-GM-MSGID X-GM-THRID X-GM-LABELS");
+    }
+    argsBuilder.append(")");
+
+    send(Command.FETCH_HEADERS, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+
+  @Override
+  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(),
         "Can't execute command because client is not logged in");
     Preconditions.checkState(!mailClientHandler.idleRequested.get(),
@@ -679,11 +748,14 @@ public class NettyImapClient implements MailClient, Idler {
     StringBuilder argsBuilder = new StringBuilder();
     // Emit ranges.
 //    argsBuilder.append('(');
-    for (int i = 0; i < uids.size(); i++) {
-      int uid = uids.get(i);
-      argsBuilder.append(uid);
-      if (i < uids.size() - 1)
+    boolean isFirst = true;
+    for (Integer uid : uids) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
         argsBuilder.append(',');
+      }
+      argsBuilder.append(uid);
     }
 //    argsBuilder.append(')');
     argsBuilder.append(" (RFC822.SIZE FLAGS INTERNALDATE ENVELOPE UID");

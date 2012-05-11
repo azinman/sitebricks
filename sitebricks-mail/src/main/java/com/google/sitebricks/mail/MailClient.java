@@ -31,6 +31,8 @@ public interface MailClient {
    */
   boolean connect(DisconnectListener listener);
 
+  void setDisconnectListener(DisconnectListener listener);
+
   /**
    * Logs out of the current IMAP session and releases all resources, including
    * executor services.
@@ -185,8 +187,10 @@ public interface MailClient {
    * <b>NOTE: you must call {@link #open(String)} first.</b>
    */
   public ListenableFuture<List<Message>> fetch(Folder folder, int start, int end);
+  public ListenableFuture<List<Message>> fetch(Folder folder, List<Integer> seqs);
   public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids);
-  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, List<Integer> uids);
+  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids);
+  public ListenableFuture<List<MessageStatus>> fetchHeaders(Folder folder, Collection<Integer> seqs);
 
   /**
    * Watches a folder for changes. This is an implementation of the IMAP IDLE command and

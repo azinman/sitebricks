@@ -48,6 +48,9 @@ class MailClientHandler extends SimpleChannelHandler {
   static final Pattern SYSTEM_ERROR_REGEX = Pattern.compile("[*]\\s*bye\\s*system\\s*error\\s*",
       Pattern.CASE_INSENSITIVE);
 
+  static final Pattern SESSION_ENDED_REGEX = Pattern.compile("[*]\\s*bye\\s*session\\s*expired",
+      Pattern.CASE_INSENSITIVE);
+
   static final Pattern IDLE_ENDED_REGEX = Pattern.compile(".* OK IDLE terminated \\(success\\)\\s*",
       Pattern.CASE_INSENSITIVE);
   static final Pattern IDLE_EXISTS_REGEX = Pattern.compile("\\* (\\d+) exists\\s*",
@@ -157,6 +160,10 @@ class MailClientHandler extends SimpleChannelHandler {
         message.trim())) {
       log.warn("{} disconnected by IMAP Server due to system error: {}", config.getUsername(),
           message);
+      disconnectAbnormally(message);
+      return;
+    } else if (SESSION_ENDED_REGEX.matcher(message).matches()) {
+      log.warn("{} disconnected by IMAP Server due to session expiration", config.getUsername());
       disconnectAbnormally(message);
       return;
     }

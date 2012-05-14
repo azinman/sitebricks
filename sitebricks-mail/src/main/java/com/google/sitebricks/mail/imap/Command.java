@@ -24,6 +24,7 @@ public enum Command {
   IDLE("idle"),
   STORE_FLAGS("uid store"),
   COPY("uid copy"),
+  ID("id"),
   STORE_LABELS("uid store");
   public static final Pattern OK_SUCCESS = Pattern.compile("\\d+ ok (.* )?\\(?success\\)?",
       Pattern.CASE_INSENSITIVE);
@@ -87,6 +88,7 @@ public enum Command {
     dataExtractors.put(STORE_FLAGS, new StoreFlagsResponseExtractor());
     dataExtractors.put(STORE_LABELS, new StoreLabelsResponseExtractor());
     dataExtractors.put(EXPUNGE, new ExpungeConfirmationExtractor());
+    dataExtractors.put(ID, new IdExtractor());
   }
 
   @SuppressWarnings("unchecked") // Heterogenous collections are a pita in Java.

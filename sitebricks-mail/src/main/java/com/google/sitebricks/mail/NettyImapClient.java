@@ -180,11 +180,12 @@ public class NettyImapClient implements MailClient, Idler {
       }
       boolean loggedIn = mailClientHandler.awaitLogin();
       if (loggedIn) {
-        String id = String.format(
-          ". ID (\"name\" \"%s\" \"version\" \"%s\" \"vendor\" \"%s\" \"contact\" \"%s\")\r\n",
+        String args = String.format(
+          "(\"name\" \"%s\" \"version\" \"%s\" \"vendor\" \"%s\" \"contact\" \"%s\")",
             config.getNameId(), config.getVersionId(), config.getVendorId(), config.getContactId());
-        log.info("Identifying using " + id);
-        channel.write(sequence.incrementAndGet() + id);
+        log.info("Identifying using " + args);
+        SettableFuture<Map<String, String>> valueFuture = SettableFuture.create();
+        send(Command.ID, args, valueFuture); // valueFuture is ignored for now
       }
       return loggedIn;
     } catch (Exception e) {

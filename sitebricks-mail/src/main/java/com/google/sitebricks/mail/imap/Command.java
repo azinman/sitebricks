@@ -20,6 +20,7 @@ public enum Command {
   FETCH_THIN_HEADERS_UID("uid fetch"),
   SEARCH_RAW_UID("uid search"),
   SEARCH_UID_ONLY("uid search"),
+  SEARCH_UID_GMAIL_MSG_ID("uid search"),
   EXPUNGE("expunge"),
   IDLE("idle"),
   STORE_FLAGS("uid store"),
@@ -82,6 +83,7 @@ public enum Command {
     dataExtractors.put(FETCH_THIN_HEADERS_UID, new MessageStatusExtractor());
     dataExtractors.put(SEARCH_RAW_UID, new SearchResultExtractor());
     dataExtractors.put(SEARCH_UID_ONLY, new SearchResultExtractor());
+    dataExtractors.put(SEARCH_UID_GMAIL_MSG_ID, new SearchResultExtractor());
     dataExtractors.put(FETCH_BODY, new MessageBodyExtractor());
     dataExtractors.put(FETCH_BODY_UID, new SingleMessageBodyExtractor());
     dataExtractors.put(COPY, new CopyResponseExtractor());

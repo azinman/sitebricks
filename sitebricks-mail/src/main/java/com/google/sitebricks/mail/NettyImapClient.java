@@ -381,6 +381,26 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
+  public ListenableFuture<List<MessageStatus>> listThin(Folder folder, int start, int end) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+            "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<MessageStatus>> valueFuture = SettableFuture.create();
+
+    // -ve end range means get everything (*).
+    String extensions = config.useGmailExtensions() ? " X-GM-MSGID X-GM-LABELS" : "";
+    StringBuilder argsBuilder = new StringBuilder();
+
+    argsBuilder.append(start + ":" + (end == -1 ? "*" : end));
+    argsBuilder.append(" (FLAGS INTERNALDATE" + extensions + ")");
+    send(Command.FETCH_HEADERS, argsBuilder.toString(), valueFuture);
+
+    return valueFuture;
+  }
+
+  @Override
   public ListenableFuture<List<MessageStatus>> listUidThin(Folder folder, int start, int end) {
     return listUidThin(folder, ImmutableList.of(new Sequence(start, end)));
   }

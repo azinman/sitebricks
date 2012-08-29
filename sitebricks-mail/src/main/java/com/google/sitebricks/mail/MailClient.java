@@ -94,6 +94,7 @@ public interface MailClient {
    * <b>NOTE: you must call {@link #open(String)} first.</b>
    */
   ListenableFuture<List<MessageStatus>> list(Folder folder, int start, int end);
+  ListenableFuture<List<MessageStatus>> listThin(Folder folder, int start, int end);
 
   /**
    * <p>

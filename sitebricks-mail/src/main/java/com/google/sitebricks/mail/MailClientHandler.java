@@ -85,8 +85,9 @@ class MailClientHandler extends SimpleChannelHandler {
   public MailClientHandler(Idler idler, MailClientConfig config) {
     this.idler = idler;
     this.config = config;
-    mBeanRegistration = JmxUtil.registerMBean(this, "com.google.sitebricks", "MailClientHandler",
-        config.getUsername());
+    mBeanRegistration = null;
+    // mBeanRegistration = JmxUtil.registerMBean(this, "com.google.sitebricks", "MailClientHandler",
+    //     config.getUsername());
   }
 
   // For debugging, use with caution!
@@ -374,7 +375,7 @@ class MailClientHandler extends SimpleChannelHandler {
   }
 
   public void disconnected() {
-    JmxUtil.unregister(mBeanRegistration);
+    // JmxUtil.unregister(mBeanRegistration);
   }
 
   static class Error implements MailClient.WireError {

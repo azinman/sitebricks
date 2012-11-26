@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.ning.http.util.Base64;
+
 /**
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
@@ -169,14 +171,19 @@ public class NettyImapClient implements MailClient, Idler {
             "Must specify a valid oauth config if not using password auth");
 
         //noinspection ConstantConditions
-        String oauthString = new XoauthSasl(config.getUsername(),
-            oauth.clientId,
-            oauth.clientSecret)
+        // String oauthString = new XoauthSasl(config.getUsername(),
+        //     oauth.clientId,
+        //     oauth.clientSecret)
 
-            .build(Protocol.IMAP, oauth.accessToken, oauth.tokenSecret);
+        //     .build(Protocol.IMAP, oauth.accessToken, oauth.tokenSecret);
 
-        channel.write(". AUTHENTICATE XOAUTH " + oauthString + "\r\n");
+        // oauthString = "user=gelliott@gmail.com\1auth=Bearer ya29.AHES6ZSjGhzZHDvEveY30WPcWtTHtRFGg51U5QIZ7v2saw1cqgTUAA\1\1";
+        String oauthString = String.format("user=%s\1auth=Bearer %s\1\1", oauth.email, oauth.accessToken);
+        oauthString = Base64.encode(oauthString.getBytes());
 
+        log.info("using email " + oauth.email + ", with access token " + oauth.accessToken + " and refresh token " + oauth.refreshToken);
+        log.info(". AUTHENTICATE XOAUTH2 " + oauthString + "\r\n");
+        channel.write(". AUTHENTICATE XOAUTH2 " + oauthString + "\r\n");
       }
       boolean loggedIn = mailClientHandler.awaitLogin();
       if (loggedIn) {
@@ -804,9 +811,9 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
-  public synchronized void updateOAuthAccessToken(String accessToken, String tokenSecret) {
+  public synchronized void updateOAuthAccessToken(String accessToken, String refreshToken) {
     config.getOAuthConfig().accessToken = accessToken;
-    config.getOAuthConfig().tokenSecret = tokenSecret;
+    config.getOAuthConfig().refreshToken = refreshToken;
   }
 
   public synchronized void done() {

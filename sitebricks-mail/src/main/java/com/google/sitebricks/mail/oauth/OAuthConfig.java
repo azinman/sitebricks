@@ -6,20 +6,17 @@ import com.google.common.base.Preconditions;
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
 public class OAuthConfig {
+  public volatile String email;
   public volatile String accessToken;
-  public volatile String tokenSecret;
-  public final String clientId;
-  public final String clientSecret;
+  public volatile String refreshToken;
 
-  public OAuthConfig(String accessToken, String tokenSecret, String clientId, String clientSecret) {
+  public OAuthConfig(String email, String accessToken, String refreshToken) {
+    Preconditions.checkArgument(email != null && !email.isEmpty());
     Preconditions.checkArgument(accessToken != null && !accessToken.isEmpty());
-    Preconditions.checkArgument(tokenSecret != null && !tokenSecret.isEmpty());
-    Preconditions.checkArgument(clientId != null && !clientId.isEmpty());
-    Preconditions.checkArgument(clientSecret != null && !clientSecret.isEmpty());
+    Preconditions.checkArgument(refreshToken != null && !refreshToken.isEmpty());
 
+    this.email = email;
     this.accessToken = accessToken;
-    this.tokenSecret = tokenSecret;
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
+    this.refreshToken = refreshToken;
   }
 }

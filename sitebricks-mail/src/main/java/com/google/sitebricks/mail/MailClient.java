@@ -246,9 +246,9 @@ public interface MailClient {
    * clients.
    *
    * @param accessToken A string containing the access token as retrieved from the oauth server.
-   * @param tokenSecret A string contianing the token secret pair of the accessToken.
+   * @param refreshToken A string contianing refresh token used to fetch new access token.
    */
-  void updateOAuthAccessToken(String accessToken, String tokenSecret);
+  void updateOAuthAccessToken(String accessToken, String refreshToken);
 
   /**
    * Fetches a single message by its uid.

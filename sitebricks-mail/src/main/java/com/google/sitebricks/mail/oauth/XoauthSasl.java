@@ -7,6 +7,9 @@ import net.oauth.OAuthConsumer;
 import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -18,6 +21,8 @@ import java.util.Map;
 public class XoauthSasl {
   private final OAuthConsumer consumer;
   private final String email;
+  private static final Logger log = LoggerFactory.getLogger(XoauthSasl.class);
+
 
   public XoauthSasl(String email, String consumerKey, String consumerSecret) {
     this.email = email;
@@ -61,6 +66,7 @@ public class XoauthSasl {
       authString.append(OAuth.percentEncode(entry.getValue()));
       authString.append("\"");
     }
+    log.info(">>>>>>>>>>>" + authString);
 
     return Base64.encode(authString.toString().getBytes());
   }

@@ -8,15 +8,12 @@ import com.google.common.base.Preconditions;
 public class OAuthConfig {
   public volatile String email;
   public volatile String accessToken;
-  public volatile String refreshToken;
 
-  public OAuthConfig(String email, String accessToken, String refreshToken) {
+  public OAuthConfig(String email, String accessToken) {
     Preconditions.checkArgument(email != null && !email.isEmpty());
     Preconditions.checkArgument(accessToken != null && !accessToken.isEmpty());
-    Preconditions.checkArgument(refreshToken != null && !refreshToken.isEmpty());
 
     this.email = email;
     this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
   }
 }

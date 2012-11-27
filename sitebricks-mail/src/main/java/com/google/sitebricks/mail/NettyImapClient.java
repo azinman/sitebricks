@@ -181,7 +181,7 @@ public class NettyImapClient implements MailClient, Idler {
         String oauthString = String.format("user=%s\1auth=Bearer %s\1\1", oauth.email, oauth.accessToken);
         oauthString = Base64.encode(oauthString.getBytes());
 
-        log.info("using email " + oauth.email + ", with access token " + oauth.accessToken + " and refresh token " + oauth.refreshToken);
+        log.info("using email " + oauth.email + ", with access token " + oauth.accessToken);
         log.info(". AUTHENTICATE XOAUTH2 " + oauthString + "\r\n");
         channel.write(". AUTHENTICATE XOAUTH2 " + oauthString + "\r\n");
       }
@@ -811,9 +811,8 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
-  public synchronized void updateOAuthAccessToken(String accessToken, String refreshToken) {
+  public synchronized void updateOAuthAccessToken(String accessToken) {
     config.getOAuthConfig().accessToken = accessToken;
-    config.getOAuthConfig().refreshToken = refreshToken;
   }
 
   public synchronized void done() {

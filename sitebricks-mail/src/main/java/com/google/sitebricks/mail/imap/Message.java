@@ -14,7 +14,8 @@ import java.util.List;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class Message implements HasBodyParts {
+public class Message implements HasBodyParts, java.io.Serializable {
+  static final long serialVersionUID = 0L;
   public static final Message ERROR = new Message();
   public static final Message EMPTIED = new Message();
 
@@ -53,6 +54,10 @@ public class Message implements HasBodyParts {
     return bodyParts;
   }
 
+  public void setBodyParts(List<BodyPart> parts) {
+    this.bodyParts = parts;
+  }
+
   @Override public void createBodyParts() { /* Noop */ }
 
   // Short hand.
@@ -78,7 +83,15 @@ public class Message implements HasBodyParts {
     return rootMimeType;
   }
 
-  public static class BodyPart implements HasBodyParts {
+  public String toString() {
+    String gmailMsgId = status == null ? "N/a" : status.getGmailMsgId() + "";
+    String threadMsgId = status == null ? "N/a" : status.getThreadId() + "";
+    String from = status == null ? "N/a" : status.getFrom() + "";
+    return "[Message uid=" + getImapUid() +
+      " gmailid=" + gmailMsgId + " threadid=" + threadMsgId + " from="+ from + "]";
+  }
+
+  public static class BodyPart implements HasBodyParts, java.io.Serializable {
     private Multimap<String, String> headers = newListMultimap();
 
     private String mimeType;
@@ -146,10 +159,12 @@ public class Message implements HasBodyParts {
 
   private static ListMultimap<String, String> newListMultimap() {
     return Multimaps.newListMultimap(
-        Maps.<String, Collection<String>>newLinkedHashMap(), new Supplier<List<String>>() {
-      @Override public List<String> get() {
-        return Lists.newArrayList();
-      }
-    });
+        Maps.<String, Collection<String>>newLinkedHashMap(), new ArrayListSupplier());
+  }
+
+  public static class ArrayListSupplier implements Supplier<List<String>>, java.io.Serializable {
+    @Override public List<String> get() {
+      return Lists.newArrayList();
+    }
   }
 }

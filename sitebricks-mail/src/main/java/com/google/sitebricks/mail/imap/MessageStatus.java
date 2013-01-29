@@ -8,7 +8,9 @@ import java.util.*;
  *
  * @author dhanji@gmail.com (Dhanji R. Prasanna)
  */
-public class MessageStatus {
+public class MessageStatus implements java.io.Serializable {
+  static final long serialVersionUID = 0L;
+
   private int imapUid;
   private String messageUid;
   private GregorianCalendar receivedDate;

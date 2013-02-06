@@ -192,10 +192,16 @@ public interface MailClient {
    * <p>
    * <b>NOTE: you must call {@link #open(String)} first.</b>
    */
+  // only peaking body
   public ListenableFuture<List<Message>> fetch(Folder folder, int start, int end);
+  // grabs envelope data as well
   public ListenableFuture<List<Message>> fetch(Folder folder, List<Integer> seqs);
-  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids);
+  // only peaking body
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, int start, int end);
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids);
+  // only headers
   public ListenableFuture<List<MessageStatus>> fetchHeaders(Folder folder, Collection<Integer> seqs);
+  public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids);
 
   /**
    * Watches a folder for changes. This is an implementation of the IMAP IDLE command and

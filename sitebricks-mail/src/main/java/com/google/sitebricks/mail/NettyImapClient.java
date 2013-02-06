@@ -664,7 +664,7 @@ public class NettyImapClient implements MailClient, Idler {
         "indexing)");
     SettableFuture<List<Message>> valueFuture = SettableFuture.create();
 
-    String args = start + ":" + toUpperBound(end) + " (uid body[])";
+    String args = start + ":" + toUpperBound(end) + " (UID BODY.PEEK[])";
     send(Command.FETCH_BODY, args, valueFuture);
 
     return valueFuture;
@@ -714,6 +714,54 @@ public class NettyImapClient implements MailClient, Idler {
 
     String args = uid + " (UID BODY.PEEK[])";
     send(Command.FETCH_BODY_UID, args, valueFuture);
+
+    return valueFuture;
+  }
+
+  @Override
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, int start, int end) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    checkRange(start, end);
+    Preconditions.checkArgument(start > 0, "Start must be greater than zero (IMAP uses 1-based " +
+        "indexing)");
+    SettableFuture<List<Message>> valueFuture = SettableFuture.create();
+
+    String args = start + ":" + toUpperBound(end) + " (UID BODY.PEEK[])";
+    send(Command.FETCH_BODY_UID, args, valueFuture);
+
+    return valueFuture;
+  }
+
+
+  @Override
+  public ListenableFuture<List<Message>> fetchUids(Folder folder, List<Integer> uids) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(),
+        "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+        "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    SettableFuture<List<Message>> valueFuture = SettableFuture.create();
+
+    // Emit ranges.
+    StringBuilder argsBuilder = new StringBuilder();
+    boolean isFirst = true;
+    for (Integer uid : uids) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        argsBuilder.append(',');
+      }
+      argsBuilder.append(uid);
+    }
+
+    argsBuilder.append(" (UID BODY.PEEK[])");
+    send(Command.FETCH_BODY_UID, argsBuilder.toString(), valueFuture);
 
     return valueFuture;
   }

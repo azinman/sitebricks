@@ -664,7 +664,7 @@ public class NettyImapClient implements MailClient, Idler {
         "indexing)");
     SettableFuture<List<Message>> valueFuture = SettableFuture.create();
 
-    String args = start + ":" + toUpperBound(end) + " (UID BODY.PEEK[])";
+    String args = start + ":" + toUpperBound(end) + " (UID X-GM-MSGID BODY.PEEK[])";
     send(Command.FETCH_BODY, args, valueFuture);
 
     return valueFuture;
@@ -712,7 +712,7 @@ public class NettyImapClient implements MailClient, Idler {
     Preconditions.checkArgument(uid > 0, "UID must be greater than zero");
     SettableFuture<Message> valueFuture = SettableFuture.create();
 
-    String args = uid + " (UID BODY.PEEK[])";
+    String args = uid + " (UID X-GM-MSGID BODY.PEEK[])";
     send(Command.FETCH_BODY_UID, args, valueFuture);
 
     return valueFuture;
@@ -731,7 +731,7 @@ public class NettyImapClient implements MailClient, Idler {
         "indexing)");
     SettableFuture<List<Message>> valueFuture = SettableFuture.create();
 
-    String args = start + ":" + toUpperBound(end) + " (UID BODY.PEEK[])";
+    String args = start + ":" + toUpperBound(end) + " (UID X-GM-MSGID BODY.PEEK[])";
     send(Command.FETCH_BODY_UID, args, valueFuture);
 
     return valueFuture;
@@ -760,7 +760,7 @@ public class NettyImapClient implements MailClient, Idler {
       argsBuilder.append(uid);
     }
 
-    argsBuilder.append(" (UID BODY.PEEK[])");
+    argsBuilder.append(" (UID X-GM-MSGID BODY.PEEK[])");
     send(Command.FETCH_BODY_UID, argsBuilder.toString(), valueFuture);
 
     return valueFuture;
@@ -797,7 +797,6 @@ public class NettyImapClient implements MailClient, Idler {
 
     return valueFuture;
   }
-
 
   @Override
   public ListenableFuture<List<MessageStatus>> fetchUidsHeaders(Folder folder, Collection<Integer> uids) {

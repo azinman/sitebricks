@@ -53,6 +53,11 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
   static final Pattern MESSAGE_START_REGEX = Pattern.compile("[*] \\d+ FETCH \\(UID \\d+ BODY\\[\\] " +
       "\\{(\\d+)\\}\\s*",
       Pattern.CASE_INSENSITIVE);
+  static final Pattern MESSAGE_START_PREFIX_REGEX_GMAIL = Pattern.compile("^\\* \\d+ FETCH \\(X-GM-MSGID (-?\\d+) UID \\d+ BODY\\[\\]",
+      Pattern.CASE_INSENSITIVE);
+  static final Pattern MESSAGE_START_REGEX_GMAIL = Pattern.compile("[*] \\d+ FETCH \\(X-GM-MSGID (-?\\d+) UID \\d+ BODY\\[\\] " +
+      "\\{(\\d+)\\}\\s*",
+      Pattern.CASE_INSENSITIVE);
 
   static final Pattern EOS_REGEX =
       Pattern.compile("^\\d+ ok success\\)?", Pattern.CASE_INSENSITIVE);
@@ -109,20 +114,39 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
     int start = 0;
     for (int i = 0, messagesSize = messages.size(); i < messagesSize; i++) {
       String message = messages.get(i);
-      final Matcher matcher = MESSAGE_START_REGEX.matcher(message);
-      if (matcher.matches() && i > start) {
-        try {
-          int msgLen = Integer.parseInt(matcher.group(1));
-        } catch(NumberFormatException e) {
-          log.error("Got message with invalid length specification: {} dumping 5 lines...",
-              matcher.group(1) );
-          for (int j = i; j < messages.size() && j - i < 5; j++) {
-            log.error(messages.get(j));
+      Matcher matcher = MESSAGE_START_REGEX.matcher(message);
+      if (matcher.matches()) {
+        if (i > start) {
+          try {
+            int msgLen = Integer.parseInt(matcher.group(1));
+          } catch(NumberFormatException e) {
+            log.error("Got message with invalid length specification: {} dumping 5 lines...",
+                matcher.group(1) );
+            for (int j = i; j < messages.size() && j - i < 5; j++) {
+              log.error(messages.get(j));
+            }
           }
+          // Partition.
+          partitionedMessagesSet.add(messages.subList(start, i));
+          start = i;
         }
-        // Partition.
-        partitionedMessagesSet.add(messages.subList(start, i));
-        start = i;
+      } else {
+        matcher = MESSAGE_START_REGEX_GMAIL.matcher(message);
+        if (matcher.matches() && i > start) {
+          try {
+            long gmailMsgId = Long.parseLong(matcher.group(1));
+            int msgLen = Integer.parseInt(matcher.group(2));
+          } catch(NumberFormatException e) {
+            log.error("Got message with invalid length specification: {} dumping 5 lines...",
+                matcher.group(2) );
+            for (int j = i; j < messages.size() && j - i < 5; j++) {
+              log.error(messages.get(j));
+            }
+          }
+          // Partition.
+          partitionedMessagesSet.add(messages.subList(start, i));
+          start = i;
+        }
       }
     }
 
@@ -227,7 +251,12 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
 
     firstLine = firstLine.replaceFirst("[*]? \\d+[ ]* ", "");
     Queue<String> tokens = Parsing.tokenize(firstLine);
-    Parsing.eat(tokens, "FETCH", "(", "UID");
+    Parsing.eat(tokens, "FETCH", "(");
+    if (tokens.peek().equalsIgnoreCase("X-GM-MSGID")) {
+      Parsing.eat(tokens, "X-GM-MSGID");
+      email.setGmailMsgId(Parsing.match(tokens, long.class));
+    }
+    Parsing.eat(tokens, "UID");
     email.setImapUid(Parsing.match(tokens, int.class));
     Parsing.eat(tokens, "BODY[]");
     String sizeString = Parsing.match(tokens, String.class);
@@ -596,6 +625,9 @@ class MessageBodyExtractor implements Extractor<List<Message>> {
         if (EOS_REGEX.matcher(next).matches())
           return true;
         if (MESSAGE_START_PREFIX_REGEX.matcher(next).find()) {
+          iterator.previous();
+          return true;
+        } else if (MESSAGE_START_PREFIX_REGEX_GMAIL.matcher(next).find()) {
           iterator.previous();
           return true;
         } else  // oops, go back.

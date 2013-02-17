@@ -21,6 +21,7 @@ public class Message implements HasBodyParts, java.io.Serializable {
 
   private MessageStatus status;
   private int imapUid;
+  private long gmailMsgId = -1;
 
   // A header can have multiple, different values.
   private Multimap<String, String> headers = newListMultimap();
@@ -33,6 +34,14 @@ public class Message implements HasBodyParts, java.io.Serializable {
 
   public int getImapUid() {
     return imapUid;
+  }
+
+  public void setGmailMsgId(long gmailMsgId) {
+    this.gmailMsgId = gmailMsgId;
+  }
+
+  public long getGmailMsgId() {
+    return gmailMsgId;
   }
 
   public void setHeaders(Multimap<String, String> headers) {

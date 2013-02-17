@@ -13,6 +13,7 @@ public enum Command {
   LIST_FOLDERS("list"),
   FETCH_BODY("fetch"),
   FETCH_BODY_UID("uid fetch"),
+  FETCH_BODY_UIDS("uid fetch"),
   FOLDER_STATUS("status"),
   FOLDER_OPEN("select"),
   FOLDER_EXAMINE("examine"),
@@ -86,6 +87,7 @@ public enum Command {
     dataExtractors.put(SEARCH_UID_GMAIL_MSG_ID, new SearchResultExtractor());
     dataExtractors.put(FETCH_BODY, new MessageBodyExtractor());
     dataExtractors.put(FETCH_BODY_UID, new SingleMessageBodyExtractor());
+    dataExtractors.put(FETCH_BODY_UIDS, new MessageBodyExtractor());
     dataExtractors.put(COPY, new CopyResponseExtractor());
     dataExtractors.put(STORE_FLAGS, new StoreFlagsResponseExtractor());
     dataExtractors.put(STORE_LABELS, new StoreLabelsResponseExtractor());

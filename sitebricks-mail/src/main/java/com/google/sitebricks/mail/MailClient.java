@@ -127,6 +127,11 @@ public interface MailClient {
   ListenableFuture<List<Integer>> uidForGmailMsgId(Folder folder, Long gmailMsgId);
 
   /**
+   * Given a set of uids, what are their gmail msg ids?
+   */
+  ListenableFuture<List<Long>> gmailMsgIdForUids(Folder folder, List<Integer> uids);
+
+  /**
    * Returns the list of uids that exist in the given folder. Returns an empty list if
    * none existed.
    */

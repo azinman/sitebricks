@@ -510,6 +510,44 @@ public class NettyImapClient implements MailClient, Idler {
   }
 
   @Override
+  public ListenableFuture<List<Long>> gmailMsgIdForUids(Folder folder, List<Integer> uids) {
+    Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
+    Preconditions.checkState(!mailClientHandler.idleRequested.get(),
+            "Can't execute command while idling (are you watching a folder?)");
+
+    checkCurrentFolder(folder);
+    final SettableFuture<List<MessageStatus>> valueFuture = SettableFuture.create();
+
+    StringBuilder argsBuilder = new StringBuilder();
+    for (int i = 0; i < uids.size(); i++) {
+      int uid = uids.get(i);
+      argsBuilder.append(uid);
+      if (i < uids.size() - 1)
+        argsBuilder.append(',');
+    }
+    argsBuilder.append(" (X-GM-MSGID)");
+    send(Command.FETCH_THIN_HEADERS_UID, argsBuilder.toString(), valueFuture);
+
+    final SettableFuture<List<Long>> finalValueFuture = SettableFuture.create();
+    valueFuture.addListener(new Runnable() {
+      public void run() {
+        try {
+          List<Long> results = new ArrayList<Long>();
+          List<MessageStatus> msgStatuses = valueFuture.get();
+          for (MessageStatus msgStatus : msgStatuses) {
+            results.add(msgStatus.getGmailMsgId());
+          }
+          finalValueFuture.set(results);
+        } catch (Exception e) {
+          finalValueFuture.setException(e);
+        }
+      }
+    }, workerPool);
+
+    return finalValueFuture;
+  }
+
+  @Override
   public ListenableFuture<List<Integer>> uidForGmailMsgId(Folder folder, Long gmailMsgId) {
     Preconditions.checkState(mailClientHandler.isLoggedIn(), "Can't execute command because client is not logged in");
     Preconditions.checkState(!mailClientHandler.idleRequested.get(),
@@ -731,8 +769,8 @@ public class NettyImapClient implements MailClient, Idler {
         "indexing)");
     SettableFuture<List<Message>> valueFuture = SettableFuture.create();
 
-    String args = start + ":" + toUpperBound(end) + " (UID BODY.PEEK[])";
-    send(Command.FETCH_BODY_UID, args, valueFuture);
+    String args = start + ":" + toUpperBound(end) + " (UID X-GM-MSGID BODY.PEEK[])";
+    send(Command.FETCH_BODY_UIDS, args, valueFuture);
 
     return valueFuture;
   }
@@ -760,8 +798,8 @@ public class NettyImapClient implements MailClient, Idler {
       argsBuilder.append(uid);
     }
 
-    argsBuilder.append(" (UID BODY.PEEK[])");
-    send(Command.FETCH_BODY_UID, argsBuilder.toString(), valueFuture);
+    argsBuilder.append(" (UID X-GM-MSGID BODY.PEEK[])");
+    send(Command.FETCH_BODY_UIDS, argsBuilder.toString(), valueFuture);
 
     return valueFuture;
   }

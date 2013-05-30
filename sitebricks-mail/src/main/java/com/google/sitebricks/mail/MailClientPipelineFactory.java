@@ -6,7 +6,8 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.string.StringDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.handler.ssl.*;
+import org.jboss.netty.util.HashedWheelTimer;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -17,6 +18,8 @@ import javax.net.ssl.SSLEngine;
 class MailClientPipelineFactory implements ChannelPipelineFactory {
   private final MailClientHandler mailClientHandler;
   private final MailClientConfig config;
+  private final HashedWheelTimer timer = new HashedWheelTimer();
+  private final SslBufferPool sslPool = new SslBufferPool();
 
   public MailClientPipelineFactory(MailClientHandler mailClientHandler, MailClientConfig config) {
     this.mailClientHandler = mailClientHandler;
@@ -28,12 +31,19 @@ class MailClientPipelineFactory implements ChannelPipelineFactory {
     ChannelPipeline pipeline = Channels.pipeline();
 
     if (config.getAuthType() != Auth.PLAIN) {
-      SSLEngine sslEngine = SSLContext.getDefault().createSSLEngine();
+      SSLContext sslContext = SSLContext.getDefault();
+      // Fix https://github.com/netty/netty/issues/832 with SSLContext
+      sslContext.getServerSessionContext().setSessionCacheSize(1); // 1 cached session
+      sslContext.getServerSessionContext().setSessionTimeout(60); // seconds
+      SSLEngine sslEngine = sslContext.createSSLEngine();
       String[] enabledProtocols = {"SSLv3", "TLSv1"};
       sslEngine.setEnabledProtocols(enabledProtocols);
       sslEngine.setUseClientMode(true);
-      SslHandler sslHandler = new SslHandler(sslEngine);
+      SslHandler sslHandler = new SslHandler(sslEngine, sslPool, false, ImmediateExecutor.INSTANCE, timer, 10000);
       sslHandler.setEnableRenegotiation(true);
+      // Explicitly allow netty to propogate ssl exceptions
+      sslHandler.setCloseOnSSLException(true);
+
       pipeline.addLast("ssl", sslHandler);
     }
 
